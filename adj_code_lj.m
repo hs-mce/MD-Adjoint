@@ -17,9 +17,12 @@ xg = [1.1,2.1];
 %initialize
 loss_arr=[];
 norm_ld = 1.0;
+alpha=-1e-0;
+% alpha = -0.01;
+options = optimset('Display','off');
 
 %% loop starts %%
-for ii=1:10000
+for ii=1:20000
 fun=@(x)LJ(x,[A,A_star,B,B_star]);
 x= fsolve(fun,xg);
 x1 = x(1); x2 = x(2);
@@ -49,14 +52,22 @@ ld_Bstar = lamda(1)*6./(x2-x1)^7 - lamda(2)*6./(x2-x1)^7;
 
 ld=[ld_A;ld_Astar;ld_B;ld_Bstar];
 
-if ii == 1
-    norm_ld = norm(ld);
-end
+%% initializing things for MMA update
+% if ii == 1
+%     norm_ld = norm(ld);
+% end
 % ld = ld/norm_ld;
 
+
 %%%%% update the parameters %%%%
-alpha=-1e-0;
-% alpha = -0.001;
+%     if ii >= 2
+%         if loss/old_loss < 0.95
+%             alpha = alpha*10.0;
+%         elseif loss/old_loss > 1.05
+%             alpha = alpha/10.0;
+%         end
+%     end
+
 P_old=[A;A_star;B;B_star];
 P_new = P_old + alpha*ld;
 A=P_new(1);
@@ -66,14 +77,15 @@ B_star = P_new(4);
 
 %% store the loss funtion at every iteration %%%
 loss_arr=[loss_arr;loss];
+old_loss = loss;
 
 end
 
 %% plot loss function %%
-% figure(2)
-% hold on
-% % plot(loss_arr,'ok')
-% semilogy(loss_arr)
+figure(2)
+hold on
+% plot(loss_arr,'ok')
+semilogy(loss_arr(1:20000)/loss_arr(1))
 
 
 %%% computing the equilibrium equations by solving the non-linear equations for LJ potential
